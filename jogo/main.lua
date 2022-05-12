@@ -11,6 +11,8 @@ nave = {
 }
 
 function destroi_nave()
+
+    musica_destruicao:play()
     nave.src = "imagens/explosao_nave.png"
     nave.imagem = love.graphics.newImage(nave.src)
     nave.largura = 67
@@ -27,10 +29,17 @@ function tem_colisao(x1, y1, l1, a1, x2, y2, l2, a2)
         y2 < y1 + a1
 end
 
+function troca_musica_fundo()
+    musica_ambiente:stop()
+    musica_game_over:play()
+end
+
 function checa_colisoes()
     for k,meteoro in pairs(meteoros) do
         if tem_colisao(meteoro.x, meteoro.y, meteoro.largura, meteoro.altura,
             nave.x, nave.y, nave.largura, nave.altura) then
+            
+            troca_musica_fundo()
             destroi_nave()
             FIM_JOGO = true
         end
@@ -90,6 +99,13 @@ function love.load()
     background = love.graphics.newImage("imagens/background.png")
     nave.imagem = love.graphics.newImage(nave.src)
     meteoro_img = love.graphics.newImage("imagens/meteoro.png")
+
+    musica_destruicao = love.audio.newSource("audios/destruicao.wav", "static")
+    musica_game_over = love.audio.newSource("audios/game_over.wav", "static")
+
+    musica_ambiente = love.audio.newSource("audios/ambiente.wav", "static")
+    musica_ambiente:setLooping(true)
+    musica_ambiente:play()
 end
 
 function love.update(dt)
