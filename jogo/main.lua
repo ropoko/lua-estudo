@@ -7,8 +7,32 @@ nave = {
     largura = 55,
     altura = 63,
     x = LARGURA_TELA / 2,
-    y = ALTURA_TELA - 64
+    y = ALTURA_TELA - 64,
+    tiros = {}
 }
+
+function atirar()
+    musica_disparo:play()
+
+    local tiro = {
+        x = nave.x + nave.largura/2,
+        y = nave.y,
+        largura = 16,
+        altura = 16
+    }
+
+    table.insert(nave.tiros, tiro)
+end
+
+function moveTiros()
+    for i = #nave.tiros, 1, -1 do
+        if nave.tiros[i].y > 0 then
+            nave.tiros[i].y = nave.tiros[i].y - 1
+        else
+            table.remove(nave.tiros, i)
+        end
+    end
+end
 
 function destroi_nave()
 
@@ -34,7 +58,7 @@ function troca_musica_fundo()
     musica_game_over:play()
 end
 
-function checa_colisoes()
+function checa_colisao_nave()
     for k,meteoro in pairs(meteoros) do
         if tem_colisao(meteoro.x, meteoro.y, meteoro.largura, meteoro.altura,
             nave.x, nave.y, nave.largura, nave.altura) then
@@ -44,6 +68,24 @@ function checa_colisoes()
             FIM_JOGO = true
         end
     end
+end
+
+function checa_colisao_tiros()
+    for i = #nave.tiros, 1, -1 do
+        for j = #meteoros, 1, -1 do
+            if tem_colisao(nave.tiros[i].x, nave.tiros[i].y, nave.tiros[i].largura, nave.tiros[i].altura,
+            meteoros[j].x, meteoros[j].y, meteoros[j].largura, meteoros[j].altura) then
+                table.remove(nave.tiros, i)
+                table.remove(meteoros, j)
+                break
+            end
+        end
+    end
+end
+
+function checa_colisoes()
+    checa_colisao_nave()
+    checa_colisao_tiros()
 end
 
 function cria_meteoro() 
@@ -99,9 +141,11 @@ function love.load()
     background = love.graphics.newImage("imagens/background.png")
     nave.imagem = love.graphics.newImage(nave.src)
     meteoro_img = love.graphics.newImage("imagens/meteoro.png")
+    tiro_img = love.graphics.newImage("imagens/tiro.png")
 
     musica_destruicao = love.audio.newSource("audios/destruicao.wav", "static")
     musica_game_over = love.audio.newSource("audios/game_over.wav", "static")
+    musica_disparo = love.audio.newSource("audios/disparo.wav", "static")
 
     musica_ambiente = love.audio.newSource("audios/ambiente.wav", "static")
     musica_ambiente:setLooping(true)
@@ -121,7 +165,16 @@ function love.update(dt)
         end
     
         move_meteoros()
+        moveTiros()
         checa_colisoes()
+    end
+end
+
+function love.keypressed(tecla)
+    if tecla == "escape" then
+        love.event.quit()
+    elseif tecla == "space" then
+        atirar()
     end
 end
 
@@ -131,5 +184,9 @@ function love.draw()
 
     for k,meteoro in pairs(meteoros) do
         love.graphics.draw(meteoro_img, meteoro.x, meteoro.y)
+    end
+
+    for k,tiro in pairs(nave.tiros) do
+        love.graphics.draw(tiro_img, tiro.x, tiro.y)
     end
 end
