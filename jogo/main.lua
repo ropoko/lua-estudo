@@ -88,7 +88,7 @@ function checa_colisoes()
     checa_colisao_tiros()
 end
 
-function cria_meteoro() 
+function cria_meteoro()
     local meteoro = {
         x = math.random(LARGURA_TELA),
         y = -70,
